@@ -1,0 +1,222 @@
+const player1 = document.getElementById("player1");
+const player2 = document.getElementById("player2");
+const doll = document.getElementById("doll");
+const dollLight = document.getElementById("doll-light");
+const statusDisplay = document.getElementById("status");
+const startBtn = document.getElementById("startBtn");
+const restartBtn = document.getElementById("restartBtn");
+const gameOverScreen = document.getElementById("game-over");
+const winnerDisplay = document.getElementById("winner");
+
+// Audio elements
+const greenAudio = document.getElementById("assets/red_light_green_light.mp3");
+const redAudio = document.getElementById("assets/red_light_green_light.mp3");
+const explosionAudio = document.getElementById("explosion-audio");
+const victoryAudio = document.getElementById("victory-audio");
+
+let greenLight = true;
+let gameActive = false;
+let player1Position = 0;
+let player2Position = 0;
+let lightInterval;
+let currentLightDuration = 0;
+
+// Player movement keys
+const KEY_PLAYER1 = 'd';
+const KEY_PLAYER2 = 'l';
+
+// Audio control functions
+function playGreenAudio() {
+  redAudio.pause();
+  redAudio.currentTime = 0;
+  greenAudio.currentTime = 0;
+  greenAudio.play().catch(e => console.log("Green audio error:", e));
+}
+
+function playRedAudio() {
+  greenAudio.pause();
+  greenAudio.currentTime = 0;
+  redAudio.currentTime = 0;
+  redAudio.play().catch(e => console.log("Red audio error:", e));
+}
+
+function stopAllAudio() {
+  greenAudio.pause();
+  redAudio.pause();
+  greenAudio.currentTime = 0;
+  redAudio.currentTime = 0;
+}
+
+// Initialize game
+function initGame() {
+  player1Position = 0;
+  player2Position = 0;
+  player1.style.bottom = `${30 + player1Position}px`;
+  player2.style.bottom = `${30 + player2Position}px`;
+  player1.style.filter = "none";
+  player2.style.filter = "none";
+  gameActive = true;
+  gameOverScreen.style.display = 'none';
+  statusDisplay.textContent = "🟢 GREEN LIGHT - MOVE!";
+  doll.style.transform = "rotate(0deg)";
+  dollLight.style.background = "#4CAF50";
+  dollLight.style.boxShadow = "0 0 20px #4CAF50";
+  greenLight = true;
+  
+  // Start light switching
+  clearInterval(lightInterval);
+  startLightCycle();
+  const gameAudio = document.getElementById('game-audio');
+
+// Start audio when game begins
+startBtn.addEventListener('click', () => {
+  gameAudio.play();
+});
+
+// Reset audio when game restarts
+restartBtn.addEventListener('click', () => {
+  gameAudio.currentTime = 0;
+});
+  
+// Start audio
+  playGreenAudio();
+}
+
+function startLightCycle() {
+  currentLightDuration = getRandomLightDuration();
+  lightInterval = setInterval(toggleLight, currentLightDuration);
+}
+
+function getRandomLightDuration() {
+  return greenLight ? 
+    (2000 + Math.random() * 3000) : // Green light duration (2-5 seconds)
+    (1500 + Math.random() * 2500);   // Red light duration (1.5-4 seconds)
+}
+
+// Toggle between red and green light
+function toggleLight() {
+  if (!gameActive) return;
+  
+  greenLight = !greenLight;
+  
+  if (greenLight) {
+    statusDisplay.textContent = "🟢 GREEN LIGHT - MOVE!";
+    doll.style.transform = "rotate(0deg)";
+    dollLight.style.background = "#4CAF50";
+    dollLight.style.boxShadow = "0 0 20px #4CAF50";
+    playGreenAudio();
+  } else {
+    statusDisplay.textContent = "🔴 RED LIGHT - STOP!";
+    doll.style.transform = "rotate(180deg)";
+    dollLight.style.background = "#f44336";
+    dollLight.style.boxShadow = "0 0 20px #f44336";
+    playRedAudio();
+  }
+  
+  // Set new light duration and restart interval
+  currentLightDuration = getRandomLightDuration();
+  clearInterval(lightInterval);
+  lightInterval = setInterval(toggleLight, currentLightDuration);
+}
+
+// Move player function
+function movePlayer(player, playerNum) {
+  if (!gameActive || !greenLight) return;
+  
+  // Move player upwards
+  const moveAmount = 10 + Math.floor(Math.random() * 5);
+  if (playerNum === 1) {
+    player1Position += moveAmount;
+    player1.style.bottom = `${30 + player1Position}px`;
+  } else {
+    player2Position += moveAmount;
+    player2.style.bottom = `${30 + player2Position}px`;
+  }
+  
+  // Check win condition
+  checkWin(playerNum);
+}
+
+// Check if player reached the finish line
+function checkWin(playerNum) {
+  const finishPosition = 350;
+  
+  if ((playerNum === 1 && player1Position >= finishPosition) ||
+      (playerNum === 2 && player2Position >= finishPosition)) {
+    endGame(playerNum);
+  }
+}
+
+// End the game with a winner
+function endGame(winner) {
+  gameActive = false;
+  clearInterval(lightInterval);
+  
+  winnerDisplay.textContent = `PLAYER ${winner} WINS! 🎉`;
+  gameOverScreen.style.display = 'block';
+  
+  // Play victory sound
+  stopAllAudio();
+  victoryAudio.currentTime = 0;
+  victoryAudio.play().catch(e => console.log("Victory audio error:", e));
+}
+
+// Game over when moving during red light
+function gameOver(playerNum) {
+  gameActive = false;
+  clearInterval(lightInterval);
+  
+  statusDisplay.textContent = `💀 PLAYER ${playerNum} MOVED ON RED LIGHT!`;
+  
+  // Highlight the losing player
+  if (playerNum === 1) {
+    player1.style.filter = "grayscale(100%) brightness(0.5)";
+  } else {
+    player2.style.filter = "grayscale(100%) brightness(0.5)";
+  }
+  
+  // Play explosion sound
+  stopAllAudio();
+  explosionAudio.currentTime = 0;
+  explosionAudio.play().catch(e => console.log("Explosion audio error:", e));
+  
+  // Show restart button after delay
+  setTimeout(() => {
+    gameOverScreen.style.display = 'block';
+    winnerDisplay.textContent = "GAME OVER";
+  }, 1500);
+}
+
+// Event Listeners
+startBtn.addEventListener("click", () => {
+  startBtn.style.display = 'none';
+  initGame();
+});
+
+restartBtn.addEventListener("click", () => {
+  initGame();
+});
+
+document.addEventListener("keydown", (e) => {
+  if (!gameActive) return;
+  
+  if (e.key.toLowerCase() === KEY_PLAYER1) {
+    if (greenLight) {
+      movePlayer(player1, 1);
+    } else {
+      gameOver(1);
+    }
+  }
+  
+  if (e.key.toLowerCase() === KEY_PLAYER2) {
+    if (greenLight) {
+      movePlayer(player2, 2);
+    } else {
+      gameOver(2);
+    }
+  }
+});
+
+// Initialize button states
+startBtn.style.display = 'block';
+gameOverScreen.style.display = 'none';
