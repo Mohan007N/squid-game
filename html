@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Red Light, Green Light</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>🔴 Red Light, 🟢 Green Light</h1>
+    <div id="instructions">
+      <p>Player 1: Press <kbd>D</kbd> to move</p>
+      <p>Player 2: Press <kbd>L</kbd> to move</p>
+      <p>Move ONLY on GREEN light!</p>
+    </div>
+    <button id="startBtn">Start Game</button>
+    <p id="status">Press START to begin</p>
+    
+    <div id="game">
+      <div id="finish-line"></div>
+      <div id="doll-container">
+        <img id="doll" src="assets/doll.png" alt="Doll" />
+        <div id="doll-light"></div>
+      </div>
+      <div id="players">
+        <div class="player" id="player1">
+          <div class="button-top">RE - WI</div>
+          <div class="button-bottom">Game Score</div>
+        </div>
+        <div class="player" id="player2">
+          <div class="button-top">RE - WI</div>
+          <div class="button-bottom">Game Score</div>
+        </div>
+      </div>
+    </div>
+    
+    <div id="game-over">
+      <h2 id="winner"></h2>
+      <button id="restartBtn">Play Again</button>
+    </div>
+  </div>
+  
+  
+   <audio id="game-audio" src="assets/red_light_green_light.mp3"></audio>
+  <script src="script.js"></script>
+</body>
+</html>
